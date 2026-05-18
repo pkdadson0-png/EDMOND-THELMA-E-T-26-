@@ -1,0 +1,344 @@
+<script>
+    // ========= SIMPLE WORKING INVITATION SYSTEM =========
+    
+    // Get the unique code from the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const accessCode = urlParams.get('code');
+    
+    let currentGuest = null;
+    let isCodeValid = false;
+    
+    // YOUR GUEST LIST - EDIT THIS WITH YOUR ACTUAL GUESTS
+    const guestList = {
+        "ELA257": "Elma",
+        "EDD180": "Eddy",
+        "AMA001": "Ama Serwaa",
+        "KOFI001": "Kofi Addo",
+        "ABE001": "Abena Osei"
+        // Add more guests here: "CODE": "Guest Name",
+    };
+    
+    // Track used codes
+    let usedCodes = JSON.parse(localStorage.getItem('used_invitation_codes') || '[]');
+    
+    // ========= VERIFY CODE =========
+    function verifyCode() {
+        console.log("Verifying code:", accessCode);
+        const countdownEl = document.getElementById('countdownTimer');
+        
+        if (!accessCode) {
+            showInvalidPage("No invitation code provided. Each guest receives a unique link.");
+            return false;
+        }
+        
+        // Check if code exists in guest list
+        if (!guestList[accessCode]) {
+            showInvalidPage("Invalid invitation code. Please check your link or contact Edmond & Thelma.");
+            return false;
+        }
+        
+        // Check if code has been used
+        if (usedCodes.includes(accessCode)) {
+            showInvalidPage("This invitation has already been used. Each invitation can only be used once.");
+            return false;
+        }
+        
+        // Code is valid
+        currentGuest = guestList[accessCode];
+        isCodeValid = true;
+        
+        if (countdownEl) {
+            countdownEl.innerHTML = `❤️ Welcome ${currentGuest}! ❤️`;
+        }
+        
+        // Small delay to ensure toast element exists
+        setTimeout(() => {
+            showToast(`Welcome ${currentGuest}! Please complete your RSVP.`);
+        }, 500);
+        
+        console.log("Code valid! Guest:", currentGuest);
+        return true;
+    }
+    
+    // ========= SHOW INVALID PAGE =========
+    function showInvalidPage(message) {
+        const rsvpBtn = document.getElementById('rsvpOpenBtn');
+        const whatsappBtn = document.getElementById('whatsappRsvpBtn');
+        if (rsvpBtn) rsvpBtn.style.display = 'none';
+        if (whatsappBtn) whatsappBtn.style.display = 'none';
+        
+        const gallery = document.getElementById('photoGallery');
+        if (gallery) gallery.innerHTML = '';
+        
+        const countdownEl = document.getElementById('countdownTimer');
+        if (countdownEl) countdownEl.innerHTML = "🔒 " + message;
+        
+        const card = document.querySelector('.wedding-card');
+        if (card) {
+            // Remove existing error div if any
+            const oldError = card.querySelector('.error-message');
+            if (oldError) oldError.remove();
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.style.textAlign = 'center';
+            errorDiv.style.padding = '40px 20px';
+            errorDiv.style.background = 'rgba(128,0,32,0.5)';
+            errorDiv.style.borderRadius = '24px';
+            errorDiv.style.margin = '20px';
+            errorDiv.style.color = 'white';
+            errorDiv.innerHTML = `
+                <i class="fas fa-ban" style="font-size: 48px; color: #d6ff7f;"></i>
+                <h2 style="margin: 20px 0;">${message}</h2>
+                <p style="color: #ccc;">If you believe this is an error, please contact Edmond & Thelma directly.</p>
+            `;
+            card.appendChild(errorDiv);
+        }
+    }
+    
+    // ========= COUNTDOWN TIMER =========
+    const weddingDate = new Date("August 8, 2026 12:00:00").getTime();
+    setInterval(() => {
+        const now = new Date().getTime();
+        const distance = weddingDate - now;
+        if (distance < 0) {
+            const cdEl = document.getElementById('countdownTimer');
+            if (cdEl && !cdEl.innerHTML.includes("Welcome")) {
+                cdEl.innerHTML = "❤️ The celebration has begun! ❤️";
+            }
+            return;
+        }
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % 86400000) / 3600000);
+        const minutes = Math.floor((distance % 3600000) / 60000);
+        const seconds = Math.floor((distance % 60000) / 1000);
+        const cdEl = document.getElementById('countdownTimer');
+        if (cdEl && isCodeValid && !cdEl.innerHTML.includes("Welcome")) {
+            cdEl.innerHTML = `❤️ ${days}d ${hours}h ${minutes}m ${seconds}s until we say "I do" ❤️`;
+        }
+    }, 1000);
+    
+    // ========= FLOATING HEARTS =========
+    function createHeart() {
+        const container = document.getElementById('heartContainer');
+        const heart = document.createElement('div');
+        heart.classList.add('heart');
+        const icons = ['❤️', '💚', '💖', '💗'];
+        heart.innerHTML = icons[Math.floor(Math.random() * icons.length)];
+        heart.style.left = Math.random() * 100 + '%';
+        heart.style.fontSize = (Math.random() * 20 + 14) + 'px';
+        heart.style.animationDuration = (Math.random() * 4 + 4) + 's';
+        container.appendChild(heart);
+        setTimeout(() => heart.remove(), 5000);
+    }
+    setInterval(createHeart, 350);
+    
+    // ========= PHOTO GALLERY =========
+    const galleryImages = [
+        "https://lh3.googleusercontent.com/pw/AP1GczNcAz-lfHxq1U4pMNiPLMENTc7Nq1T5_kOmxxHoCxIGavz5pS4Hl4L2mM58d0PxPYlYMnr7ex96-y-26r-lUpHRJvlnLgQv4JfZcugFO2ccVXOQWzY=w2400",
+        "https://lh3.googleusercontent.com/pw/AP1GczNNg-fQOt3jRxeKxPOxJS26Re-VMAK4SyW8DJGkzXGhpMSDPuHvoG8YjC56Bu-w7PGzuNdDELHcOhBF1tkrcMMfB_6mzrE8p_NNhEHPm4fZgEGLzZg=w2400",
+        "https://lh3.googleusercontent.com/pw/AP1GczND5XG9lZmEMmhJdMl_VFMv43sYkgKhl7d4UVCmNUoWruwa8R8KvYNLQF6AjtMpe9DOKNyU8HJtLrYmc-Av-Ul0cRmS1XTL7o-oRX_9CzeC6piWI9U=w2400",
+        "https://lh3.googleusercontent.com/pw/AP1GczPnpyQhjtnF1ByJyJejvEV1t-ZJmLXHJsYgDeDO6nF9qmnz_fCIeXnlrdN3Z9nSkQQ8fFjXdLr4L-pqLS6jgmpNVtn3neoZY1WHSrXT05OPqvTUwEI=w2400",
+        "https://lh3.googleusercontent.com/pw/AP1GczP40hOAwMXhFgx2nXIPgAV_QW576iwgpE9g-e6D2nNenyZXHKjzdVyykxlv2d3kMwx3-ZeRnAyp8UxE6OlGXfNij0vQqa4cCHPPHCPK0ONbAG14C9Y=w2400",
+        "https://lh3.googleusercontent.com/pw/AP1GczO75NkjcGz3BF-dDHBN9VB1IHi8Itv_CAnS6OZgmCjJcKoaYNN48EO8_8rfYZyAkTnTdrHEYduwPEGfg8Pa66X1433ZToT3QYO2-MTa1zNGUXhXH3w=w2400"
+    ];
+    const gallery = document.getElementById('photoGallery');
+    if (gallery) {
+        gallery.innerHTML = ''; // Clear any existing
+        galleryImages.forEach(src => {
+            const div = document.createElement('div');
+            div.className = 'gallery-item';
+            div.innerHTML = `<img src="${src}" alt="Wedding memory">`;
+            gallery.appendChild(div);
+        });
+    }
+    
+    // ========= QR CODE =========
+    const qrDiv = document.getElementById('qrcodeCanvas');
+    if (qrDiv) {
+        qrDiv.innerHTML = ''; // Clear any existing
+        new QRCode(qrDiv, {
+            text: window.location.href,
+            width: 85,
+            height: 85,
+            colorDark: "#800020",
+            colorLight: "#ffffff"
+        });
+    }
+    
+    // ========= TOAST FUNCTION =========
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toastMsg');
+        if (!toast) return;
+        toast.innerText = msg;
+        toast.style.opacity = '1';
+        toast.style.background = isError ? '#800020' : '#d6ff7f';
+        toast.style.color = isError ? 'white' : '#2c0b14';
+        setTimeout(() => toast.style.opacity = '0', 3000);
+    }
+    
+    // ========= RSVP STORAGE =========
+    let rsvpList = JSON.parse(localStorage.getItem('wedding_rsvp')) || [];
+    
+    function updateAcceptedCount() {
+        const accepted = rsvpList.filter(entry => entry.status === 'accept');
+        const totalPeople = accepted.reduce((sum, entry) => sum + (entry.guests || 1), 0);
+        localStorage.setItem('accepted_guests_total', totalPeople);
+        const displayEl = document.getElementById('acceptedCountDisplay');
+        if (displayEl) displayEl.innerText = totalPeople;
+        return totalPeople;
+    }
+    
+    // ========= MODAL CONTROLS =========
+    const modal = document.getElementById('rsvpModal');
+    const openBtn = document.getElementById('rsvpOpenBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const rsvpForm = document.getElementById('rsvpForm');
+    
+    if (openBtn) {
+        openBtn.onclick = () => {
+            if (isCodeValid) {
+                modal.style.display = 'flex';
+            } else {
+                showToast("This invitation is no longer valid.", true);
+            }
+        };
+    }
+    if (closeModalBtn) closeModalBtn.onclick = () => { modal.style.display = 'none'; };
+    window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+    
+    // ========= FORMSPREE SETUP =========
+    const FORMSPREE_URL = 'https://formspree.io/f/xojbajjv';
+    
+    if (rsvpForm) {
+        rsvpForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!isCodeValid) {
+                showToast("This invitation has expired.", true);
+                modal.style.display = 'none';
+                return;
+            }
+            
+            const guestName = document.getElementById('guestName').value.trim();
+            const attendingStatus = document.getElementById('attendingStatus').value;
+            let guestCount = parseInt(document.getElementById('guestCount').value);
+            const feedback = document.getElementById('feedbackMsg').value.trim();
+            
+            if (!guestName || !attendingStatus) {
+                showToast("Please enter your name and select attendance", true);
+                return;
+            }
+            if (guestCount < 1) guestCount = 1;
+            
+            const submitBtn = document.querySelector('#rsvpForm button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            submitBtn.disabled = true;
+            
+            try {
+                // Send to Formspree
+                await fetch(FORMSPREE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({
+                        name: guestName,
+                        status: attendingStatus === 'accept' ? '✅ ACCEPTED' : '❌ DECLINED',
+                        guests: guestCount,
+                        message: feedback || "No message",
+                        code: accessCode,
+                        timestamp: new Date().toLocaleString()
+                    })
+                });
+                
+                // Mark code as used
+                usedCodes.push(accessCode);
+                localStorage.setItem('used_invitation_codes', JSON.stringify(usedCodes));
+                
+                // Save locally
+                const newRSVP = {
+                    name: guestName,
+                    status: attendingStatus,
+                    guests: guestCount,
+                    message: feedback || "No message",
+                    timestamp: new Date().toLocaleString()
+                };
+                rsvpList.push(newRSVP);
+                localStorage.setItem('wedding_rsvp', JSON.stringify(rsvpList));
+                updateAcceptedCount();
+                
+                showToast(attendingStatus === 'accept' ? `✅ ${guestName}, you're confirmed! This link is now expired.` : `💔 Response recorded, ${guestName}.`);
+                
+                document.getElementById('guestName').value = '';
+                document.getElementById('attendingStatus').value = '';
+                document.getElementById('guestCount').value = '1';
+                document.getElementById('feedbackMsg').value = '';
+                modal.style.display = 'none';
+                
+                isCodeValid = false;
+                
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+                
+            } catch (error) {
+                showToast("Error saving RSVP. Please try again.", true);
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+    }
+    
+    updateAcceptedCount();
+    
+    // ========= WHATSAPP RSVP =========
+    const whatsappBtn = document.getElementById('whatsappRsvpBtn');
+    if (whatsappBtn) {
+        whatsappBtn.addEventListener('click', () => {
+            if (!isCodeValid) {
+                showToast("This invitation is no longer valid.", true);
+                return;
+            }
+            const msg = `Hello Edmond & Thelma! I'm responding to your wedding invitation.%0A%0A🎉 Name: [Your Name]%0A✅ I will attend with ___ guests.%0A%0ACode: ${accessCode}`;
+            window.open(`https://wa.me/?text=${msg}`, '_blank');
+            showToast("Please include your name and guest count in the message.");
+        });
+    }
+    
+    // ========= BACKGROUND MUSIC =========
+    const audio = new Audio('https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=romantic-piano-impromptu-179116.mp3');
+    audio.loop = true;
+    audio.volume = 0.4;
+    let isPlaying = false;
+    const musicBtn = document.getElementById('musicToggleBtn');
+    if (musicBtn) {
+        musicBtn.onclick = () => {
+            if (isPlaying) {
+                audio.pause();
+                musicBtn.innerHTML = '<i class="fas fa-play"></i>';
+            } else {
+                audio.play().catch(e => console.log("User interaction needed"));
+                musicBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            }
+            isPlaying = !isPlaying;
+        };
+    }
+    
+    function startMusic() {
+        if (!isPlaying && isCodeValid) {
+            audio.play().then(() => { isPlaying = true; if(musicBtn) musicBtn.innerHTML = '<i class="fas fa-pause"></i>'; }).catch(e => {});
+            document.removeEventListener('click', startMusic);
+            document.removeEventListener('touchstart', startMusic);
+        }
+    }
+    document.addEventListener('click', startMusic);
+    document.addEventListener('touchstart', startMusic);
+    
+    // ========= RUN VERIFICATION (FIXED - waits for page to be ready) =========
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', verifyCode);
+    } else {
+        verifyCode();
+    }
+</script>
